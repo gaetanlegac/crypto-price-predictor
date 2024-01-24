@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+    <script src="https://codeyellowbv.github.io/chartist-plugin-legend/chartist-plugin-legend.js"></script>
+
+    <style>
+        .ct-chart {
+       position: relative;
+   }
+   .ct-legend {
+       position: relative;
+       z-index: 10;
+       list-style: none;
+       text-align: left;
+   }
+   .ct-legend li {
+       position: relative;
+       padding-left: 23px;
+       margin-right: 10px;
+       margin-bottom: 3px;
+       cursor: pointer;
+       display: block;
+   }
+   .ct-legend li:before {
+       width: 12px;
+       height: 12px;
+       position: absolute;
+       left: 0;
+       content: '';
+       border: 3px solid transparent;
+       border-radius: 2px;
+   }
+   .ct-legend li.inactive:before {
+       background: transparent;
+   }
+   .ct-legend.ct-legend-inside {
+       position: absolute;
+       top: 0;
+       right: 0;
+   }
+   .ct-legend.ct-legend-inside li{
+       display: block;
+       margin: 0;
+   }
+   .ct-legend .ct-series-0:before {
+       background-color: #d70206;
+       border-color: #d70206;
+   }
+   .ct-legend .ct-series-1:before {
+       background-color: #f05b4f;
+       border-color: #f05b4f;
+   }
+   .ct-legend .ct-series-2:before {
+       background-color: #f4c63d;
+       border-color: #f4c63d;
+   }
+   .ct-legend .ct-series-3:before {
+       background-color: #d17905;
+       border-color: #d17905;
+   }
+   .ct-legend .ct-series-4:before {
+       background-color: #453d3f;
+       border-color: #453d3f;
+   }
+
+   .ct-chart-line-multipleseries .ct-legend .ct-series-0:before {
+      background-color: #d70206;
+      border-color: #d70206;
+   }
+
+   .ct-chart-line-multipleseries .ct-legend .ct-series-1:before {
+      background-color: #f4c63d;
+      border-color: #f4c63d;
+   }
+
+   .ct-chart-line-multipleseries .ct-legend li.inactive:before {
+      background: transparent;
+    }
+        </style>
+
+</head>
+
+<body>
+
+    <% if (graphBTC) { %>
+    <div id="graphBTC" style="height: 600px;"></div>
+    <script>
+        new Chartist.Line('#graphBTC', {
+            labels: [
+                <%- Object.keys( graphBTC[0] ).map((date) => `"${date}"`).join(', ') %>
+            ],
+            series: [<%- graphBTC.map(( donneesGraph ) => {
+                return '[' + Object.values( donneesGraph ).map((date) => `"${date}"`).join(', ') + ']'
+            }).join(', ') %>]
+        }, {
+            fullWidth: true,
+            chartPadding: {
+                right: 150
+            }
+        });
+    </script>
+    <% } %>
+
+    <div style="display: flex; flex-wrap: wrap;">
+        <% for (const groupe of groupes) {
+            const id = Math.round(Math.random() * 100000);
+            %>
+            <div class="groupe">
+                Score: <%= groupe.score %> | Taille patterns: <%= groupe.taille %> | Recurrence: <%= groupe.patterns.length %> | Points sim: <%= groupe.pointsSimilaires %> | Deltamax: <%= groupe.deltaMax * 100 %>% | tRef: <%= groupe.tailleRef %>
+                <div id="graph-<%= id %>" style="width: 900px;"></div>
+                <script>
+                    new Chartist.Line('#graph-<%= id %>', {
+                        series: [<%- groupe.patterns.map(( pattern ) => {
+                            return '[' + Object.values(pattern.vals).map((variation) => {
+                                return `"${valeurs[ pattern.vals[0] ].rel}"`;
+                            }).join(', ') + ']'
+                        }).join(', ') %>]
+                    }, {
+                        fullWidth: true,
+                        chartPadding: {
+                            left: 50,
+                            //bottom: 50
+                        },
+                        height: 500,
+                        plugins: [
+                            Chartist.plugins.legend({
+                                position: 'bottom',
+                                legendNames: [
+                                    <%- groupe.patterns.map(( pattern ) => {
+                                        let retour = Object.keys(pattern.vals)[0];
+
+                                        if (pattern.infos)
+                                            retour += `| Points sim: ${pattern.infos.pointsSimilaires} | Delta max: ${pattern.infos.deltaMax * 100}% | Diff delta max: ${pattern.infos.diffDeltaMax * 100}%`
+                                        else
+                                            retour += ' (référence)'
+
+                                        return `"${retour}"`;
+                                    }).join(', ') %>
+                                ]
+                            })
+                        ]
+                    });
+                </script>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>
